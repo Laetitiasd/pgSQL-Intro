@@ -113,5 +113,61 @@ $$ LANGUAGE plpgsql;
 
 
 
+CREATE OR REPLACE FUNCTION dateSqlToDatefr(
+    p_date TEXT
+) RETURNS TEXT AS $$
+DECLARE
+    v_date DATE;
+BEGIN
+    -- Convertir la chaîne d'entrée en type DATE
+    v_date := TO_DATE(p_date, 'YYYY-MM-DD');
+
+    -- Retourner au format français JJ/MM/AAAA
+    RETURN TO_CHAR(v_date, 'DD/MM/YYYY');
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION getNbJoursParMois(
+    p_date DATE
+) RETURNS INTEGER AS $$
+DECLARE
+    nb_jours INTEGER;
+BEGIN
+    -- Calculer le dernier jour du mois de la date donnée
+    nb_jours := EXTRACT(DAY FROM (DATE_TRUNC('month', p_date) + INTERVAL '1 month - 1 day'));
+
+    RETURN nb_jours;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION getNomJour(
+    p_date DATE
+) RETURNS TEXT AS $$
+DECLARE
+    jour_num INTEGER;
+    jour_nom TEXT;
+BEGIN
+    -- Extraire le numéro du jour de la semaine (0=dimanche, 1=lundi, ..., 6=samedi)
+    jour_num := EXTRACT(DOW FROM p_date);
+
+    -- Associer le numéro au nom du jour
+    CASE jour_num
+        WHEN 0 THEN jour_nom := 'Dimanche';
+        WHEN 1 THEN jour_nom := 'Lundi';
+        WHEN 2 THEN jour_nom := 'Mardi';
+        WHEN 3 THEN jour_nom := 'Mercredi';
+        WHEN 4 THEN jour_nom := 'Jeudi';
+        WHEN 5 THEN jour_nom := 'Vendredi';
+        WHEN 6 THEN jour_nom := 'Samedi';
+        ELSE
+            RAISE EXCEPTION 'Jour invalide';
+    END CASE;
+
+    RETURN jour_nom;
+END;
+$$ LANGUAGE plpgsql;
+
 
 
